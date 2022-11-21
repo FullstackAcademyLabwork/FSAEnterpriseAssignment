@@ -41,7 +41,7 @@ jobs:
       # zipping up for sending to AWS
       - name: zipUp
         run: |
-          cd ./.venv/lib/python3.9/site-packages
+          cd /home/runner/.virtualenvs/.venv/lib/python3.9/site-packages
           zip -r9 ../../../../lambdaFile.zip .
           
       # Add app into zip file
