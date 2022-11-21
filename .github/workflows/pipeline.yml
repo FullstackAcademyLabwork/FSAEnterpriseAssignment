@@ -35,9 +35,6 @@ jobs:
       - run: pip install -r requirements.txt
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
         
-      - name: VenvActivation
-        run: . venv/bin/activate
-        
       # checking security with Bandit
       - name: banditCheck
         uses: shundor/python-bandit-scan@v1.0
