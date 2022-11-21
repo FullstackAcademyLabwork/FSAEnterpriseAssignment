@@ -70,7 +70,7 @@ jobs:
       
       # Download previous artifact
         - name: artifactDownload
-          uses: actions/download-artifacts@v3.0.1
+          uses: actions/download-artifact@v3.0.1
           with:
             name: enterpriseLambda
       
