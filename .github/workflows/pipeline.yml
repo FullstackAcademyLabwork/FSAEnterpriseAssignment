@@ -23,7 +23,8 @@ jobs:
           architecture: x64
   
       # Setting up a virtual environment to host security checks and linter
-      - uses: syphar/restore-virtualenv@v1
+      - name: VirtEnvSetup
+        uses: syphar/restore-virtualenv@v1
         id: cache-virtualenv
         with:
           requirement_files: requirements.txt
@@ -33,6 +34,9 @@ jobs:
         
       - run: pip install -r requirements.txt
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+        
+      - name: VenvActivation
+        run: . venv/bin/activate
         
       # checking security with Bandit
       - name: banditCheck
@@ -46,7 +50,7 @@ jobs:
           
       # Add app into zip file
       - name: addAppToZipFile
-        run: cd ./app && zip -g ../lamba.zip -r .
+        run: cd ./app && zip -g ../lambda.zip -r .
         
       # Upload into AWS as an artifact
       - name: zipUpload
