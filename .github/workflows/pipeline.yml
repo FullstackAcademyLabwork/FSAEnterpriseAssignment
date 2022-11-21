@@ -39,6 +39,7 @@ jobs:
         uses: jpetrucciani/bandit-check@1.7.4
         
       # Checking security with Snyk
+      - run: snyk auth # kept on getting errors from snykCheck to use an authenticated account, hopefully this works
       - name: snykCheck
         uses: snyk/actions/python-3.8@master
         continue-on-error: true
