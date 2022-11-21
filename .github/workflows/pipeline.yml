@@ -34,20 +34,6 @@ jobs:
       - run: pip install -r requirements.txt
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
         
-  security-and-lint-checks:
-    needs: [continuous-integration]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v2
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-virtualenv
-
-      - run: flake8
-      - run: pydocstyle
-      - run: isort . --diff --check-only
-      - run: black --check --diff .
-        
       # checking security with Bandit
       - name: banditCheck
         uses: jpetrucciani/bandit-check@1.7.4
