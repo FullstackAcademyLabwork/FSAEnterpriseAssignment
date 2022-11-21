@@ -61,9 +61,6 @@ jobs:
       needs: [continuous-integration]
       if: github.ref == 'refs/heads/main'
       steps:
-      
-        - name: CheckoutPreReq
-          uses: action/checkout@v2
           
         - name: awsCLIinstall
           uses: isbang/setup-awscli@v0.1.0
