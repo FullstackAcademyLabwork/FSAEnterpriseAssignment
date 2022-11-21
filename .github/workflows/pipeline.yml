@@ -23,16 +23,20 @@ jobs:
           architecture: x64
   
       # Setting up a virtual environment to host security checks and linter
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-virtualenv
+      - name: setupVenv
+        uses: actions/cache@v2
+        id: cache-venv
         with:
-          requirement_files: requirements.txt
-          
-      - uses: syphar/restore-pip-download-cache@v1
-        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
-        
-      - run: pip install -r requirements.txt
-        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+          path: venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+      - name: Virtual environment activation and install dependencies
+        run: python -m venv venv && source venv/bin/activate &&
+          pip3 install -r requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+      - name: Virtualenv install
+        run: . venv/bin/activate
         
       # checking security with Bandit
       - name: banditCheck
