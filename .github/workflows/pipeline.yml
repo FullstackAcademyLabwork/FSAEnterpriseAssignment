@@ -70,7 +70,7 @@ jobs:
 
   continuous-deployment:
       runs-on: ubuntu-latest
-      needs: [security-and-lint-checks]
+      needs: [continuous-integration]
       if: github.ref == 'refs/heads/master'
       steps:
         - name: awsCLIinstall
