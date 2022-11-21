@@ -41,12 +41,14 @@ jobs:
       # Checking security with Snyk
       - name: snykCheck
         uses: snyk/actions/python-3.8@master
-        continue-on-error: true # needed so workflow continues without stopping, as an error would otherwise cause a failure here
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --sarif-file-output=snyk.sarif
-      - name: snykCheckUpload
+      
+      # Uploading previous check to github security tab
+      - name: snykLoad
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk.sarif
