@@ -43,7 +43,7 @@ jobs:
       - name: zipUp
         run: |
           cd /home/runner/.virtualenvs/.venv
-          zip -r9 ../../../../lambdaFile.zip .
+          sudo zip -r9 ../../../../lambdaFile.zip .
           
       # Add app into zip file
       - name: addAppToZipFile
