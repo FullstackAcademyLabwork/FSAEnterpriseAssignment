@@ -7,7 +7,7 @@ on:
 
 jobs:
   continuous-integration:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2.5.0
@@ -56,7 +56,7 @@ jobs:
           path: enterpriseLambda.zip
 
   continuous-deployment:
-      runs-on: ubuntu-latest
+      runs-on: macos-latest
       needs: [continuous-integration]
       if: github.ref == 'refs/heads/master'
       steps:
