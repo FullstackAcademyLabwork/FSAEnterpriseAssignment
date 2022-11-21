@@ -47,7 +47,7 @@ jobs:
           
       # Add app into zip file
       - name: addAppToZipFile
-        run: cd ./app && zip -g ../lambda.zip -r .
+        run: cd ./app && zip -g ../enterpriseLambda.zip -r .
         
       # Upload into AWS as an artifact
       - name: zipUpload
