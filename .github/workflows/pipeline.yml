@@ -76,7 +76,7 @@ jobs:
           uses: koraykoska/s3-upload-github-action@0.1.3
           env:
             FILE: enterpriseLambda.zip
-            S3_ENDPOINT: 'http://enterprise-assignment-bukkit.s3-website-us-east-1.amazonaws.com/'
+            S3_ENDPOINT: "http://enterprise-assignment-bukkit.s3-website-us-east-1.amazonaws.com/"
             S3_BUCKET: ${{ secrets.S3_BUCKET }}
             S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCES_KEY_ID }}
             S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
