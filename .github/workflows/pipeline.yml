@@ -37,22 +37,6 @@ jobs:
       # checking security with Bandit
       - name: banditCheck
         uses: jpetrucciani/bandit-check@1.7.4
-        
-      # Checking security with Snyk
-      - run: snyk auth # kept on getting errors from snykCheck to use an authenticated account, hopefully this works
-      - name: snykCheck
-        uses: snyk/actions/python-3.8@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --sarif-file-output=snyk.sarif
-      
-      # Uploading previous check to github security tab
-      - name: snykLoad
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
       
       # zipping up for sending to AWS
       - name: zipUp
