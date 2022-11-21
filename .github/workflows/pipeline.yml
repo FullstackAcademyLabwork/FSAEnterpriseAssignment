@@ -21,26 +21,32 @@ jobs:
         with:
           python-version: 3.8
           architecture: x64
-        
-      # Install virtEnv tool
-      - name: pyVirEnvInstall
-        run: pip3 install virtualenv
-        
-      # Setup Python virtEnv
-      - name: pyVirEnvSetup
-        uses: actions/cache@v2
-        id: cache-venv
+  
+      # Setting up a virtual environment to host security checks and linter
+      - uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
         with:
-          path: venv
-          key: ${{ runner.os }}-venv-${{ hashFiles ('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-venv-
-            
-      # Activate Python VirEnv
-      - name: pyVirEnvActivation
-        run: python -m venv venv && source venv/bin/activate &&
-          pip3 install -r requirements.txt
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+          requirement_files: requirements.txt
+      
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+
+      - run: pip install -r requirements.txt
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+        
+  security-and-lint-checks:
+    needs: [continuous-integration]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v2
+      - uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
+
+      - run: flake8
+      - run: pydocstyle
+      - run: isort . --diff --check-only
+      - run: black --check --diff .
         
       # checking security with Bandit
       - name: banditCheck
@@ -78,7 +84,7 @@ jobs:
 
   continuous-deployment:
       runs-on: ubuntu-latest
-      needs: [continuous-integration]
+      needs: [security-and-lint-checks]
       if: github.ref == 'refs/heads/master'
       steps:
         - name: awsCLIinstall
