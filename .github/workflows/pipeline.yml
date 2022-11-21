@@ -42,7 +42,7 @@ jobs:
       - name: zipUp
         run: |
           cd ./venv/lib/python3.8/site-packages
-          zip -r9 ../../../../lambdaFile.zip
+          zip -r9 ../../../../lambdaFile.zip .
           
       # Add app into zip file
       - name: addAppToZipFile
