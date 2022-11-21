@@ -1,0 +1,113 @@
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.5.0
+
+      - name: workflowValidation
+        run: echo Hold on..,. just... getting ready here.,,,. 
+
+      # Installing Python to properly read the ported .NET code
+      - name: pySetup
+        uses: actions/setup-python@v2.3.3
+        with:
+          python-version: 3.8
+          architecture: x64
+        
+      # Install virtEnv tool
+      - name: pyVirEnvInstall
+        run: pip3 install virtualenv
+        
+      # Setup Python virtEnv
+      - name: pyVirEnvSetup
+        uses: actions/cache@v2
+        id: cache-venv
+        with:
+          path: venv
+          key: ${{ runner.os }}-venv-${{ hashFiles ('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+            
+      # Activate Python VirEnv
+      - name: pyVirEnvActivation
+        run: python -m venv venv && source venv/bin/activate &&
+          pip3 install -r requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        
+      # checking security with Bandit
+      - name: banditCheck
+        uses: jpetrucciani/bandit-check@1.7.4
+        
+      # Checking security with Snyk
+      - name: snykCheck
+        uses: snyk/actions/python-3.8@master
+        continue-on-error: true # needed so workflow continues without stopping, as an error would otherwise cause a failure here
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      - name: snykCheckUpload
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif-file: snyk.sarif
+      
+      # zipping up for sending to AWS
+      - name: zipUp
+        run: |
+          cd ./venv/lib/python3.8/site-packages
+          zip -r9 ../../../../lambdaFile.zip
+          
+      # Add app into zip file
+      - name: addAppToZipFile
+        run: cd ./app && zip -g ../lamba.zip -r .
+        
+      # Upload into AWS as an artifact
+      - name: zipUpload
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: enterpriseLambda
+          path: enterpriseLambda.zip
+
+  continuous-deployment:
+      runs-on: ubuntu-latest
+      needs: [continuous-integration]
+      if: github.ref == 'refs/heads/master'
+      steps:
+        - name: awsCLIinstall
+          uses: cyberonin/awscli-action@v0.0.1
+          with:
+            AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      # Download previous artifact
+        - name: artifactDownload
+          uses: actions/download-artifacts@v3.0.1
+          with:
+            name: enterpriseLambda
+      
+      # Upload s3 file to lambda
+        - name: lambdaUpload
+          uses: koraykoska/s3-upload-github-action@0.1.3
+          env:
+            FILE: enterpriseLambda.zip
+            S3_ENDPOINT: 'http://enterprise-assignment-bukkit.s3-website-us-east-1.amazonaws.com/'
+            S3_BUCKET: ${{ secrets.S3_BUCKET }}
+            S3_ACCES_KEY_ID: ${{ secrets.S3_ACCES_KEY_ID }}
+            S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+      
+      # Deploy new Lambda zip to s3 bucket
+        - name: lambdaDeploy
+          run: aws lambda update-function-code --function-name assignment-lambda --s3-bucket -enterprise-assignment-bukkit --s3-key -enterpriseLambda.zip
+          env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION
